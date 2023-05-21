@@ -107,15 +107,13 @@ class NewVersion {
     } else if (Platform.isAndroid) {
       return _getAndroidStoreVersion(packageInfo);
     } else {
-      debugPrint(
-          'The target platform "${Platform.operatingSystem}" is not yet supported by this package.');
+      debugPrint('The target platform "${Platform.operatingSystem}" is not yet supported by this package.');
     }
   }
 
   /// This function attempts to clean local version strings so they match the MAJOR.MINOR.PATCH
   /// versioning pattern, so they can be properly compared with the store version.
-  String _getCleanVersion(String version) =>
-      RegExp(r'\d+\.\d+\.\d+').stringMatch(version) ?? '0.0.0';
+  String _getCleanVersion(String version) => RegExp(r'\d+\.\d+\.\d+').stringMatch(version) ?? '0.0.0';
 
   /// iOS info is fetched by using the iTunes lookup API, which returns a
   /// JSON document.
@@ -139,19 +137,16 @@ class NewVersion {
     }
     return VersionStatus._(
       localVersion: _getCleanVersion(packageInfo.version),
-      storeVersion:
-          _getCleanVersion(forceAppVersion ?? jsonObj['results'][0]['version']),
+      storeVersion: _getCleanVersion(forceAppVersion ?? jsonObj['results'][0]['version']),
       appStoreLink: jsonObj['results'][0]['trackViewUrl'],
       releaseNotes: jsonObj['results'][0]['releaseNotes'],
     );
   }
 
   /// Android info is fetched by parsing the html of the app store page.
-  Future<VersionStatus?> _getAndroidStoreVersion(
-      PackageInfo packageInfo) async {
+  Future<VersionStatus?> _getAndroidStoreVersion(PackageInfo packageInfo) async {
     final id = androidId ?? packageInfo.packageName;
-    final uri =
-    Uri.https("play.google.com", "/store/apps/details", {"id": "$id", "hl": "en"});
+    final uri = Uri.https("play.google.com", "/store/apps/details", {"id": "$id", "hl": "en"});
     final response = await http.get(uri);
     if (response.statusCode != 200) {
       debugPrint('Can\'t find an app in the Play Store with the id: $id');
@@ -165,32 +160,30 @@ class NewVersion {
     final additionalInfoElements = document.getElementsByClassName('hAyfc');
     if (additionalInfoElements.isNotEmpty) {
       final versionElement = additionalInfoElements.firstWhere(
-            (elm) => elm.querySelector('.BgcNfc')!.text == 'Current Version',
+        (elm) => elm.querySelector('.BgcNfc')!.text == 'Current Version',
       );
       storeVersion = versionElement.querySelector('.htlgb')!.text;
 
       final sectionElements = document.getElementsByClassName('W4P4ne');
       final releaseNotesElement = sectionElements.firstWhereOrNull(
-            (elm) => elm.querySelector('.wSaTQd')!.text == 'What\'s New',
+        (elm) => elm.querySelector('.wSaTQd')!.text == 'What\'s New',
       );
-      releaseNotes = releaseNotesElement
-          ?.querySelector('.PHBdkd')
-          ?.querySelector('.DWPxHb')
-          ?.text;
+      releaseNotes = releaseNotesElement?.querySelector('.PHBdkd')?.querySelector('.DWPxHb')?.text;
     } else {
       final scriptElements = document.getElementsByTagName('script');
       final infoScriptElement = scriptElements.firstWhere(
-            (elm) => elm.text.contains('key: \'ds:4\''),
+        (elm) => elm.text.contains('key: \'ds:5\''),
       );
 
-      final param = infoScriptElement.text.substring(20, infoScriptElement.text.length - 2)
+      final param = infoScriptElement.text
+          .substring(20, infoScriptElement.text.length - 2)
           .replaceAll('key:', '"key":')
           .replaceAll('hash:', '"hash":')
           .replaceAll('data:', '"data":')
           .replaceAll('sideChannel:', '"sideChannel":')
           .replaceAll('\'', '"');
       final parsed = json.decode(param);
-      final data =  parsed['data'];
+      final data = parsed['data'];
 
       storeVersion = data[1][2][140][0][0][0];
       releaseNotes = data[1][2][144][1][1];
@@ -203,6 +196,7 @@ class NewVersion {
       releaseNotes: releaseNotes,
     );
   }
+
   /// Shows the user a platform-specific alert about the app update. The user
   /// can dismiss the alert or proceed to the app store.
   ///
@@ -221,8 +215,7 @@ class NewVersion {
   }) async {
     final dialogTitleWidget = Text(dialogTitle);
     final dialogTextWidget = Text(
-      dialogText ??
-          'You can now update this app from ${versionStatus.localVersion} to ${versionStatus.storeVersion}',
+      dialogText ?? 'You can now update this app from ${versionStatus.localVersion} to ${versionStatus.storeVersion}',
     );
 
     final updateButtonTextWidget = Text(updateButtonText);
@@ -247,8 +240,7 @@ class NewVersion {
 
     if (allowDismissal) {
       final dismissButtonTextWidget = Text(dismissButtonText);
-      dismissAction = dismissAction ??
-          () => Navigator.of(context, rootNavigator: true).pop();
+      dismissAction = dismissAction ?? () => Navigator.of(context, rootNavigator: true).pop();
       actions.add(
         Platform.isAndroid
             ? TextButton(
